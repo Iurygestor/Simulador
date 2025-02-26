@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulação de Proposta</title>
+    <link rel="icon" type="image/jpeg" href="https://i.imgur.com/3sK8J6I.jpeg">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .history {
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .history-item {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <img src="https://i.imgur.com/3sK8J6I.jpeg" alt="Imagem do topo" style="width: 200px; height: auto; display: block; margin: 0 auto 20px; border-radius: 8px;">
+    <div class="container">
+        <h2>Simulação de Proposta</h2>
+        <form id="simulacao-form">
+            <label for="nomeCliente">Nome do Cliente:</label>
+            <input type="text" id="nomeCliente" required>
+            
+            <label for="numeroCliente">Número do Cliente:</label>
+            <input type="text" id="numeroCliente" required>
+
+            <label for="corretor">Corretor:</label>
+            <select id="corretor">
+                <option value="Selecionar">Selecionar</option>
+                <option value="gustavo">Gustavo</option>
+                <option value="bianca">Bianca</option>
+                <option value="lucas">Lucas</option>
+                <option value="duda">Duda</option>
+                <option value="iury">Iury</option>
+            </select>
+
+            <label for="valorEntrada">Valor de Entrada:</label>
+            <input type="number" id="valorEntrada" required>
+
+            <label for="valorMaximo">Valor Máximo:</label>
+            <input type="number" id="valorMaximo" required>
+
+            <button type="button" id="calcularBtn">Calcular</button>
+        </form>
+        
+        <div class="history">
+            <h3>Histórico de Simulações</h3>
+            <button onclick="baixarHistorico()">Baixar Histórico</button>
+            <button onclick="limparHistorico()" style="margin-top: 10px;">Limpar Histórico</button>
+            <button style="padding: 10px 20px; font-size: 16px; background-color: #007bff; color: white; border: none; cursor: pointer;" 
+                onclick="window.location.href='Proposta.html'">
+                Simular proposta
+            </button>
+
+            <div id="historico"></div>
+        </div>
+		
+    </div>
+	<p>Iury Barreto Sales 26/02/2025</p>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            carregarHistorico();
+
+            // Adiciona o evento de clique no botão "Calcular"
+            document.getElementById("calcularBtn").addEventListener("click", calcular);
+        });
+
+        function calcular() {
+            const nomeCliente = document.getElementById("nomeCliente").value.trim();
+            const numeroCliente = document.getElementById("numeroCliente").value.trim();
+            const corretor = document.getElementById("corretor").value;
+            const valorEntrada = parseFloat(document.getElementById("valorEntrada").value);
+            const valorMaximo = parseFloat(document.getElementById("valorMaximo").value);
+
+            if (!nomeCliente || !numeroCliente || isNaN(valorEntrada) || isNaN(valorMaximo) || valorMaximo < valorEntrada) {
+                alert("Preencha todos os campos corretamente.");
+                return;
+            }
+
+            function calcularDetalhes(valor) {
+                const valorTotalLiberado = valor / 0.04392;
+                const valorMenos87Porcento = valor * 0.13;
+                const diferencaValor = valorMaximo - valorEntrada;
+                return { valorTotalLiberado, valorMenos87Porcento, diferencaValor };
+            }
+
+            const detalhesEntrada = calcularDetalhes(valorEntrada);
+            const detalhesMaximo = calcularDetalhes(valorMaximo);
+
+            const dataHora = new Date().toLocaleString(); // Captura a data e hora
+
+            const simulacao = { nomeCliente, numeroCliente, corretor, valorEntrada, valorMaximo, detalhesEntrada, detalhesMaximo, dataHora };
+            
+            salvarHistorico(simulacao);
+            carregarHistorico();
+        }
+
+        function salvarHistorico(simulacao) {
+            let historico = JSON.parse(localStorage.getItem("historicoSimulacoes")) || [];
+            historico.push(simulacao);
+            localStorage.setItem("historicoSimulacoes", JSON.stringify(historico));
+        }
+
+        function carregarHistorico() {
+            document.getElementById("historico").innerHTML = "";
+            verHistorico();
+        }
+
+        function verHistorico() {
+            const historicoDiv = document.getElementById("historico");
+            historicoDiv.innerHTML = "";
+
+            let historico = JSON.parse(localStorage.getItem("historicoSimulacoes")) || [];
+
+            if (historico.length === 0) {
+                historicoDiv.innerHTML = "<p>Nenhum histórico disponível.</p>";
+                return;
+            }
+
+            historico.forEach(simulacao => {
+                const cores = {
+                    gustavo: "blue",
+                    bianca: "pink",
+                    lucas: "lightgray",
+                    duda: "cyan",
+                    iury: "green"
+                };
+
+                const novoItem = document.createElement("div");
+                novoItem.classList.add("history-item");
+                novoItem.style.borderColor = cores[simulacao.corretor] || "black";
+                novoItem.innerHTML = ` 
+                    <h4 style="color:${cores[simulacao.corretor]}">Cliente: ${simulacao.nomeCliente} (${simulacao.numeroCliente}) - Corretor: ${simulacao.corretor.toUpperCase()}</h4>
+                    <p><strong>Data e Hora:</strong> ${simulacao.dataHora}</p>
+                    <div style="border-bottom: 1px solid #ddd; margin-bottom: 10px; padding-bottom: 10px;">
+                        <h5>Simulação - Valor de Entrada</h5>
+                        <p><strong>Valor Inserido:</strong> R$${simulacao.valorEntrada.toFixed(2)}</p>
+                        <p><strong>Valor Total Liberado:</strong> R$${simulacao.detalhesEntrada.valorTotalLiberado.toFixed(2)}</p>
+                        <p><strong>Valor após desconto:</strong> R$${simulacao.detalhesEntrada.valorMenos87Porcento.toFixed(2)}</p>
+                    </div>
+                    <div>
+                        <h5>Simulação - Valor Máximo</h5>
+						<p><strong>Diferença:</strong> R$${simulacao.detalhesMaximo.diferencaValor.toFixed(2)}</p>
+                        <p><strong>Valor Máximo:</strong> R$${simulacao.valorMaximo.toFixed(2)}</p>
+                        <p><strong>Valor Total Liberado:</strong> R$${simulacao.detalhesMaximo.valorTotalLiberado.toFixed(2)}</p>
+                        <p><strong>Valor após desconto:</strong> R$${simulacao.detalhesMaximo.valorMenos87Porcento.toFixed(2)}</p>
+                    </div>
+                `;
+                historicoDiv.prepend(novoItem);
+            });
+        }
+
+        function limparHistorico() {
+            localStorage.removeItem("historicoSimulacoes");
+            document.getElementById("historico").innerHTML = "<p>Histórico apagado.</p>";
+        }
+
+        function baixarHistorico() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            let historico = JSON.parse(localStorage.getItem("historicoSimulacoes")) || [];
+
+            if (historico.length === 0) {
+                alert("Nenhum histórico disponível para baixar.");
+                return;
+            }
+
+            doc.setFont("helvetica", "bold");
+            doc.text("Histórico de Simulações", 20, 20);
+            doc.setFont("helvetica", "normal");
+            doc.text("----------------------------------------", 20, 30);
+
+            let y = 40;
+
+            historico.forEach((simulacao, index) => {
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+
+                doc.setFont("helvetica", "bold");
+                doc.text(`Simulação ${index + 1}`, 20, y);
+                y += 6;
+                
+                doc.setFont("helvetica", "normal");
+                doc.text(`Data e Hora: ${simulacao.dataHora}`, 20, y);
+                y += 6;
+                doc.text("----------------------------------------", 20, y);
+                y += 10;
+                
+                doc.text(`Cliente: ${simulacao.nomeCliente}`, 20, y);
+                y += 6;
+                doc.text(`Número: ${simulacao.numeroCliente}`, 20, y);
+                y += 6;
+                doc.text(`Corretor: ${simulacao.corretor.toUpperCase()}`, 20, y);
+                y += 6;
+                doc.text("----------------------------------------", 20, y);
+                y += 10;
+
+				doc.text(`Proposta 01`, 20, y);
+                y += 6;
+                doc.text(`Valor Entrada: R$${simulacao.valorEntrada.toFixed(2)}`, 20, y);
+                y += 6;
+                doc.text(`Valor Total Liberado: R$${simulacao.detalhesEntrada.valorTotalLiberado.toFixed(2)}`, 20, y);
+                y += 6;
+                doc.text(`Valor após desconto: R$${simulacao.detalhesEntrada.valorMenos87Porcento.toFixed(2)}`, 20, y);
+                y += 6;
+				doc.text("----------------------------------------", 20, y);
+				y += 6;
+				doc.text(`Proposta 02`, 20, y);
+                y += 6;
+                doc.text(`Valor Máximo: R$${simulacao.valorMaximo.toFixed(2)}`, 20, y);
+                y += 6;
+                doc.text(`Valor Total Liberado: R$${simulacao.detalhesMaximo.valorTotalLiberado.toFixed(2)}`, 20, y);
+                y += 6;
+                doc.text(`Valor após desconto: R$${simulacao.detalhesMaximo.valorMenos87Porcento.toFixed(2)}`, 20, y);
+                y += 10;
+
+                // Adiciona a linha de separação
+                doc.setLineWidth(0.5);
+                doc.line(20, y, 190, y); // linha horizontal
+                y += 10; // espaço após a linha
+            });
+
+            doc.save("Historico_Simulacoes.pdf");
+        }
+    </script>
+</body>
+</html>

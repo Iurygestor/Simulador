@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Dados</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+            text-align: left;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            margin-top: 15px;
+            padding: 10px;
+            width: 100%;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #resultado {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            display: none;
+            white-space: pre-line;
+        }
+        .copy-btn {
+            margin-top: 10px;
+            padding: 8px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .copy-btn:hover {
+            background-color: #0056b3;
+        }
+        .back-btn {
+            margin-top: 20px;
+            padding: 10px;
+            width: 100%;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+    </style>
+    <script>
+        function calcularValorLiberado() {
+            const parcela = parseFloat(document.getElementById("parcela").value.replace(",", "."));
+            if (!isNaN(parcela) && parcela > 0) {
+                const libera = (parcela / 0.04392).toFixed(2);
+                document.getElementById("libera").value = libera.replace(".", ",");
+            } else {
+                document.getElementById("libera").value = "";
+            }
+        }
+
+        function simularProposta() {
+            const nome = document.getElementById("nome").value;
+            const endereco = document.getElementById("endereco").value;
+            const email = document.getElementById("email").value;
+            const telefone = document.getElementById("telefone").value;
+            const parcela = document.getElementById("parcela").value;
+            const libera = document.getElementById("libera").value;
+            
+            const resultadoTexto = `NADJA ELISABETH PEREIRA LOPES\n\nENDEREÇO: ${endereco}\n\nEMAIL: ${email}\n\nTELEFONE: ${telefone}\n\nPARCELA: R$ ${parcela}\n\nLIBERA: R$ ${libera}`;
+            
+            document.getElementById("resultado").innerText = resultadoTexto;
+            document.getElementById("resultado").style.display = "block";
+            document.getElementById("copyButton").style.display = "block";
+        }
+
+        function copiarTexto() {
+            const resultadoDiv = document.getElementById("resultado");
+            navigator.clipboard.writeText(resultadoDiv.innerText).then(() => {
+                alert("Texto copiado com sucesso!");
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Formulador de proposta</h1>
+        <form onsubmit="event.preventDefault(); simularProposta();">
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" required>
+
+            <label for="endereco">Endereço:</label>
+            <input type="text" id="endereco" name="endereco" required>
+
+            <label for="email">E-mail:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="telefone">Telefone:</label>
+            <input type="tel" id="telefone" name="telefone" required>
+
+            <label for="parcela">Parcela (R$):</label>
+            <input type="text" id="parcela" name="parcela" required oninput="calcularValorLiberado()">
+
+            <label for="libera">Libera (R$):</label>
+            <input type="text" id="libera" name="libera" readonly>
+
+            <button type="submit">Simular Proposta</button>
+        </form>
+
+        <div id="resultado"></div>
+        <button class="copy-btn" onclick="copiarTexto()" style="display: none;" id="copyButton">Copiar Texto</button>
+
+        <button class="back-btn" onclick="window.location.href='index.html'">Voltar</button>
+    </div>
+</body>
+</html>
